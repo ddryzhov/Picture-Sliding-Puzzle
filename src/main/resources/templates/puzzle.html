@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Webpage</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="/css/stylesheet.css" />
+    <style>
+        body {
+            background-color: #868e96;
+        }
+    </style>
+</head>
+
+
+<body>
+<div id = "MiddleRating">
+    <p><span id="rat"></span></p>
+    <script>
+        $.ajax({
+            url: "/K/middle-rating",
+            type: "GET",
+            dataType: "json",
+            success: function(players){
+                var totalPoints = 0;
+                var numPlayers = players.length;
+                for(var i=0; i<numPlayers; i++){
+                    totalPoints += players[i].rating;
+                }
+                var avgPoints = totalPoints / numPlayers;
+
+                var topPlayerDiv = $("#MiddleRating");
+                topPlayerDiv.append("<p>AverageRating: " + avgPoints + "</p>");
+            },
+            error: function(){
+                alert("Error when receiving players from the server ");
+            }
+        });
+    </script>
+</div>
+
+<div id="text1">
+    <p>Puzzle</p>
+</div>
+
+<div id="steps">
+    <p>Steps: <span id="step-count">0</span></p>
+</div>
+
+<div class="login-box" id="comment-cont">
+    <h2>Leave a comment:</h2>
+    <form action="/puzzle/comment" method="post">
+        <div class="user-box">
+            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+            <label>Comment:</label>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            Submit
+        </button>
+    </form>
+</div>
+
+<div class="login-box1" id="rating-cont">
+    <h2>Rate the game from 1 to 5:</h2>
+    <form action="/puzzle/rating" method="post">
+        <div class="user-box1">
+            <textarea class="form-control1" id="rating" name="rating" rows="4" required></textarea>
+            <label>Rating:</label>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            Submit
+        </button>
+    </form>
+</div>
+
+<div id="container3">
+    <div id="ratingsContainer"></div>
+</div>
+
+<div id="container4">
+    <div id="ratingsContainer1"></div>
+</div>
+
+<div id="container">
+    <div id="puzzle-container">
+        <span th:utext="${@puzzleController.getPuzzleBoard()}"></span>
+    </div>
+
+    <div id="win">
+        <p th:utext="${message}"></p>
+    </div>
+
+    <div id="stred">
+        <p th:utext="${message}"></p>
+    </div>
+
+    <div id="try">
+        <p th:utext="${message}"></p>
+    </div>
+
+    <div id="button-container">
+        <button id="my-button1">a</button>
+
+        <button id="my-button">d</button>
+
+        <button id="my-button2">w</button>
+
+        <button id="my-button3">s</button>
+
+        <button id="newGameButton" onclick="startNewGame()">New Game</button>
+    </div>
+</div>
+</div>
+<script>
+
+    ratingContainer = document.getElementById("rating-cont");
+    commentContainer = document.getElementById("comment-cont");
+    ratingCOntainerAll = document.getElementById("ratingsContainer1");
+    avgratingContainer = document.getElementById("MiddleRating");
+
+    function guessPuzzle()
+    {
+        fetch('/puzzle/guessPlayer')
+            .then(response => response.text())
+            .then(data => {
+                if(data === "guess")
+                {
+                    ratingContainer.style.display = 'none';
+                    commentContainer.style.display = 'none';
+                    ratingCOntainerAll.style.display = 'block';
+                    avgratingContainer.style.display = 'block';
+                }
+                else
+                {
+                    ratingContainer.style.display = 'block';
+                    commentContainer.style.display = 'block';
+                    ratingCOntainerAll.style.display = 'none';
+                    avgratingContainer.style.display = 'none';
+                }
+            });
+    }
+    guessPuzzle();
+
+    function startNewGame() {
+        window.location.href = "/new";
+    }
+
+    // Call the GET endpoint
+    $.ajax({
+        url: "/puzzle/toprating",
+        type: "GET",
+        dataType: "json", // Specify the expected data type as JSON
+        success: function(data) {
+            // Handle the success response
+            let html = '';
+
+            // Generate HTML for each rating
+            for (var i = 0; i < data.length; i++) {
+                var name = data[i].name;
+                var moves = data[i].moves;
+
+                html += '<div class="rating">';
+                html += '<h3>' + moves + '</h3>';
+                html += '<p>' + name + '</p>';
+                html += '</div>';
+            }
+
+            $('#ratingsContainer').html(html);
+        },
+        error: function(xhr, status, error) {
+            // Handle the error response
+            console.log("Error: " + error);
+        }
+    });
+
+    $.ajax({
+        url: "/puzzle/ratingTable",
+        type: "GET",
+        dataType: "json", // Specify the expected data type as JSON
+        success: function(data) {
+            // Handle the success response
+            let html = '';
+
+            // Generate HTML for each rating
+            for (var i = 0; i < data.length; i++) {
+                var username = data[i].username;
+                var rating = data[i].rating;
+
+                html += '<div class="rating1">';
+                html += '<h3>' + rating + '</h3>';
+                html += '<p>' + username + '</p>';
+                html += '</div>';
+            }
+
+            $('#ratingsContainer1').html(html);
+        },
+        error: function(xhr, status, error) {
+            // Handle the error response
+            console.log("Error: " + error);
+        }
+    });
+
+
+    function updateStepCount() {
+        $.ajax({
+            url: "/puzzle/step",
+            type: "GET",
+            success: function(data) {
+                $("#step-count").text(data);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        $('#my-button').click(function() {
+            $.ajax({
+                type: 'POST',
+                url: '/puzzle/move-right',
+                success: function(data) {
+                    $('#puzzle-container').html(data);
+                    updateStepCount();
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+    });
+
+    $(document).ready(function() {
+        $('#my-button1').click(function() {
+            $.ajax({
+                type: 'POST',
+                url: '/puzzle/move-left',
+                success: function(data) {
+                    $('#puzzle-container').html(data);
+                    updateStepCount();
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+    });
+
+    $(document).ready(function() {
+        $('#my-button2').click(function() {
+            $.ajax({
+                type: 'POST',
+                url: '/puzzle/move-up',
+                success: function(data) {
+                    $('#puzzle-container').html(data);
+                    updateStepCount();
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+    });
+
+    $(document).ready(function() {
+        $('#my-button3').click(function() {
+            $.ajax({
+                type: 'POST',
+                url: '/puzzle/move-down',
+                success: function(data) {
+                    $('#puzzle-container').html(data);
+                    updateStepCount();
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

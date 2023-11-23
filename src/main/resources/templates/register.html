@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration Form</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+
+<body>
+<div id="header1">Picture Sliding Puzzle</div>
+<div class="login-box">
+    <h2>Register</h2>
+    <form th:action="@{/register}" th:object="${score}" method="post">
+        <div class="user-box">
+            <label for="username"></label>
+            <input type="text" id="username" name="username" th:field="*{name}" required>
+            <label>Username</label>
+        </div>
+        <button type="submit">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            Register
+        </button>
+    </form>
+</div>
+</body>
+</html>
